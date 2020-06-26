@@ -22,10 +22,12 @@ public class TrelloWebhookController {
   private final RestTemplate restTemplate = new RestTemplate();
 
   private final TrelloConfig trelloConfig;
+  private final WebhookNotifier webhookNotifier;
 
   @Autowired
-  public TrelloWebhookController(TrelloConfig trelloConfig) {
+  public TrelloWebhookController(TrelloConfig trelloConfig, WebhookNotifier webhookNotifier) {
     this.trelloConfig = trelloConfig;
+    this.webhookNotifier = webhookNotifier;
   }
 
   @PostMapping("/register")
@@ -61,9 +63,7 @@ public class TrelloWebhookController {
   public ResponseEntity<String> trelloWebhook(RequestEntity<TrelloPayload> payload) {
     System.out.println("Trello Payload:");
     System.out.println(payload.getBody().getAction().getData().getCard());
-    System.out.println("Type: " + payload.getBody().getAction().getType());
-    System.out.println("Data List After Name:");
-    System.out.println(payload.getBody().getAction().getData().getListAfter().getName());
+    webhookNotifier.sendTrelloEvent();
     return ResponseEntity.ok("");
   }
 }

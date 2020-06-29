@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.jitterted.overlay</groupId>
-	<artifactId>webhook</artifactId>
+	<artifactId>webhook-proxy</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Overlay Webhook Proxy</name>
 	<description>Webhook Proxy for Trello and others</description>

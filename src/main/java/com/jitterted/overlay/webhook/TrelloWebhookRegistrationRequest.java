@@ -5,9 +5,11 @@ public class TrelloWebhookRegistrationRequest {
   private String callbackURL;
   private String idModel;
   private String description;
+  private String token;
 
-  public TrelloWebhookRegistrationRequest(String apikey, String callbackURL, String idModel, String description) {
-    this.key = apikey;
+  public TrelloWebhookRegistrationRequest(TrelloConfig trelloConfig, String callbackURL, String idModel, String description) {
+    this.key = trelloConfig.getApikey();
+    this.token = trelloConfig.getApitoken();
     this.callbackURL = callbackURL;
     this.idModel = idModel;
     this.description = description;
@@ -43,5 +45,13 @@ public class TrelloWebhookRegistrationRequest {
 
   public void setDescription(String description) {
     this.description = description;
+  }
+
+  public String getToken() {
+    return token;
+  }
+
+  public void setToken(String token) {
+    this.token = token;
   }
 }

@@ -1,10 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" >
 <head>
   <meta charset="UTF-8">
   <title>Registration Completed</title>
 </head>
 <body>
-Registration of Webhook is complete!
+
+<h1>Registration Completed</h1>
+
+<div th:if="${error}">
+  <h3>Problem encountered during Trello Webhook registration.</h3>
+  <span style="font-style: italic" th:text="${error}">An error occurred</span>
+</div>
+
+<div th:if="${success}">
+  Registration of Webhook is complete: <span style="font-weight: bold" th:text="${success}">Success!</span>
+</div>
 </body>
 </html>

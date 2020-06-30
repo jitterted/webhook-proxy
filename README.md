@@ -9,6 +9,8 @@ Vue front-end overlay code is at https://github.com/jitterted/jitteroverlay
 
 Trello board holding the features to work on, etc.: https://trello.com/b/wKSOndRf/jitterted-overlays
 
+API reference docs for Trello are here: https://developer.atlassian.com/cloud/trello/rest/ 
+
 ## Requirements
 
 Requires environment variables for Trello API token and key. More info soon.

@@ -21,6 +21,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -39,6 +41,20 @@ public class TrelloWebhookController {
   public TrelloWebhookController(TrelloConfig trelloConfig, WebhookNotifier webhookNotifier) {
     this.trelloConfig = trelloConfig;
     this.webhookNotifier = webhookNotifier;
+  }
+
+  @GetMapping("/")
+  public String homePage(Model model) {
+    ResponseEntity<TrelloWebhook[]> webhookEntity = restTemplate
+        .getForEntity("https://api.trello.com/1/tokens/{token}/webhooks?key={key}",
+                      TrelloWebhook[].class,
+                      trelloConfig.getApitoken(),
+                      trelloConfig.getApikey());
+
+    List<TrelloWebhook> webhookList = Arrays.asList(webhookEntity.getBody());
+    model.addAttribute("webhooks", webhookList);
+
+    return "index";
   }
 
   @PostMapping(path = "/register", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})

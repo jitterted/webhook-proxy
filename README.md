@@ -19,6 +19,8 @@ Requires environment variables for Trello API token and key. More info soon.
 
 * Add exception handling for the `delete` webhook function
 
+* Add better description info when registering webhooks with Trello
+
 ## Lessons Learned
 
 Change error handling like this: 
@@ -31,3 +33,12 @@ Change error handling like this:
 //    });
 
 But doesn't handle things well if the API returns different objects for different status codes
+
+### Parameterizing RestTemplate for Raw Array
+
+as per 'return_1's suggestion on stream:
+
+    restTemplate.exchange("", HttpMethod.GET, null,
+                          new ParameterizedTypeReference<List<TrelloWebhook>>() {},
+                          "");
+ 

@@ -28,7 +28,9 @@
 <h2>Delete Existing Webhook</h2>
 <ul>
   <li th:each="webhook : ${ webhooks }" style="font-family: monospace">
-    <span th:text="${webhook.id}"></span> - <span th:text="${webhook.callbackURL}"></span>
+    Webhook ID: <span th:text="${webhook.id}">webhookid</span>
+    - <span th:text="${webhook.callbackURL}">url</span>
+    - Watched Model ID: <span th:text="${webhook.idModel}">idmodel</span>
   </li>
 </ul>
 <form action="/delete" method="post">

@@ -18,3 +18,16 @@ Requires environment variables for Trello API token and key. More info soon.
 ## TO DO
 
 * Add exception handling for the `delete` webhook function
+
+## Lessons Learned
+
+Change error handling like this: 
+
+//    restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
+//      @Override
+//      public boolean hasError(ClientHttpResponse response) throws IOException {
+//        return false;
+//      }
+//    });
+
+But doesn't handle things well if the API returns different objects for different status codes

@@ -4,17 +4,21 @@ import com.jitterted.overlay.webhook.trello.TrelloPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Map;
@@ -24,7 +28,6 @@ public class TrelloWebhookController {
 
   public static final Logger LOGGER = LoggerFactory.getLogger(TrelloWebhookController.class);
 
-  private static final String TRELLO_MODEL_ID_TO_WATCH = "5ee298bac53199290301955a";
   private static final String TRELLO_WEBHOOK_REGISTRATION_URL = "https://api.trello.com/1/webhooks"; // 1/tokens/{token}/webhooks/";
 
   private final RestTemplate restTemplate = new RestTemplate();
@@ -36,26 +39,19 @@ public class TrelloWebhookController {
   public TrelloWebhookController(TrelloConfig trelloConfig, WebhookNotifier webhookNotifier) {
     this.trelloConfig = trelloConfig;
     this.webhookNotifier = webhookNotifier;
-//    restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
-//      @Override
-//      public boolean hasError(ClientHttpResponse response) throws IOException {
-//        return false;
-//      }
-//    });
   }
 
-  @PostMapping("/register")
-  public String registerTrelloWebhook(RequestEntity<String> requestEntity,
-                                      RedirectAttributes redirectAttributes) {
-    String origin = requestEntity.getHeaders().getOrigin();
-    if (origin.contains("localhost")) {
-      origin = "https://052f12294ec0.ngrok.io";
-    }
-    String callbackUrl = origin + "/trello";
+  @PostMapping(path = "/register", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+  public String registerTrelloWebhook(
+      WebhookRegistrationRequest registrationRequest,
+      WebRequest webRequest,
+      RedirectAttributes redirectAttributes) {
+    String origin = extractHostFrom(webRequest);
+    String callbackUrl = origin + "/trello/" + registrationRequest.getWebhookName();
 
     try {
       ResponseEntity<TrelloWebhookRegistrationResponse> response =
-          registerTrelloWebhook(callbackUrl);
+          registerTrelloWebhook(callbackUrl, registrationRequest.getIdToWatch());
 
       LOGGER.info("Registration response from Trello: status = {}, body = '{}'",
                   response.getStatusCode(),
@@ -67,6 +63,14 @@ public class TrelloWebhookController {
     }
 
     return "redirect:/registered";
+  }
+
+  private String extractHostFrom(WebRequest webRequest) {
+    String origin = webRequest.getHeader(HttpHeaders.ORIGIN);
+    if (origin != null && origin.contains("localhost")) {
+      origin = "https://4cae77f50ec5.ngrok.io"; // TODO: tell user they should be going thru ngrok
+    }
+    return origin;
   }
 
   @PostMapping("/delete")
@@ -87,13 +91,13 @@ public class TrelloWebhookController {
     return "deleted";
   }
 
-  private ResponseEntity<TrelloWebhookRegistrationResponse> registerTrelloWebhook(String callbackUrl) {
+  private ResponseEntity<TrelloWebhookRegistrationResponse> registerTrelloWebhook(String callbackUrl, String idToWatch) {
     LOGGER.info("Registering webhook for Trello with callback URL={}", callbackUrl);
 
     TrelloWebhookRegistrationRequest request =
         new TrelloWebhookRegistrationRequest(trelloConfig,
                                              callbackUrl,
-                                             TRELLO_MODEL_ID_TO_WATCH,
+                                             idToWatch,
                                              "Webhook for Overlay");
 
     return restTemplate
@@ -107,16 +111,19 @@ public class TrelloWebhookController {
     return "registered";
   }
 
-  @RequestMapping(method = RequestMethod.HEAD, path = "/trello")
-  public ResponseEntity<?> trelloWebhookVerification() {
-    LOGGER.info("Received HEAD request from Trello");
+  @RequestMapping(method = RequestMethod.HEAD, path = "/trello/{callbackName}")
+  public ResponseEntity<?> trelloWebhookVerification(@PathVariable("callbackName") String callbackName) {
+    LOGGER.info("Received HEAD request from Trello for callback='{}'", callbackName);
     return ResponseEntity.ok().build();
   }
 
-  @PostMapping("/trello")
-  public ResponseEntity<?> trelloWebhook(RequestEntity<TrelloPayload> payload) {
-    LOGGER.info("Trello Payload, Card = {}", payload.getBody().getAction().getData().getCard());
-    webhookNotifier.sendTrelloEvent();
+  @PostMapping("/trello/{callbackName}")
+  public ResponseEntity<?> trelloWebhook(RequestEntity<TrelloPayload> payload,
+                                         @PathVariable("callbackName") String callbackName) {
+    String idForModelBeingWatched = payload.getBody().getModel().getId();
+    LOGGER.info("Trello Payload, model id = {}", idForModelBeingWatched);
+    TrelloEvent trelloEvent = new TrelloEvent(callbackName, idForModelBeingWatched);
+    webhookNotifier.sendTrelloEvent(trelloEvent);
     LOGGER.info("Trello event sent via websocket.");
     return ResponseEntity.ok().build();
   }

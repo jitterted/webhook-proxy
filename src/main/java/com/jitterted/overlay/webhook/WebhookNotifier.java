@@ -16,8 +16,8 @@ public class WebhookNotifier {
     this.simpMessagingTemplate = simpMessagingTemplate;
   }
 
-  public void sendTrelloEvent() {
-    simpMessagingTemplate.convertAndSend(TOPIC_TRELLO, "HeyGuys");
+  public void sendTrelloEvent(TrelloEvent trelloEvent) {
+    simpMessagingTemplate.convertAndSend(TOPIC_TRELLO, trelloEvent);
   }
 
 }

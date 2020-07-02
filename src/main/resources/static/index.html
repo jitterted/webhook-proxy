@@ -6,12 +6,31 @@
 </head>
 <body>
 
+<h1>Trello Webhook Management</h1>
+
+<h2>Register New Webhook</h2>
 <form action="/register" method="post">
+  <label>
+    Model ID to Watch:
+    <input type="text" name="idToWatch" size="30">
+  </label>
+  <br/>
+  <br/>
+  <label>
+    Name for Webhook:
+    <input type="text" name="webhookName" size="20">
+  </label>
+  <br/>
+  <br/>
   <button type="submit">Register Trello Webhook</button>
 </form>
 <hr/>
+<h2>Delete Existing Webhook</h2>
 <form action="/delete" method="post">
-  Webhook ID: <input type="text" name="webhookId" size="30">
+  <label>
+    Webhook ID:
+    <input type="text" name="webhookId" size="30">
+  </label>
   <br/>
   <br/>
   <button type="submit">Delete Webhook</button>
